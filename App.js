@@ -1,20 +1,97 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  View,
+} from 'react-native';
+
+import Header from './src/components/Header';
+import NotamInput from './src/components/NotamInput';
+import ResultSection from './src/components/ResultSection';
+import Disclaimer from './src/components/Disclaimer';
+import { translateNotam } from './src/services/notamTranslator';
 
 export default function App() {
+  const [notam, setNotam] = useState('');
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleTranslate = async () => {
+    const trimmed = notam.trim();
+    if (trimmed.length === 0) {
+      Alert.alert('Uyarı', 'Lütfen önce bir NOTAM metni girin.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const translation = await translateNotam(trimmed);
+      setResult(translation);
+    } catch (err) {
+      Alert.alert('Hata', 'NOTAM çevirisi sırasında bir hata oluştu.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setNotam('');
+    setResult(null);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.flex}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Header />
+
+          <NotamInput
+            value={notam}
+            onChangeText={setNotam}
+            onSubmit={handleTranslate}
+            onClear={handleClear}
+            loading={loading}
+          />
+
+          <ResultSection result={result} />
+
+          {result && (
+            <View style={styles.disclaimerWrapper}>
+              <Disclaimer />
+            </View>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
+  },
+  flex: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  disclaimerWrapper: {
+    paddingHorizontal: 20,
+    marginTop: 4,
   },
 });

@@ -1,0 +1,36 @@
+/**
+ * NOTAM kısaltma sözlüğü. Mock çevirmen tarafından kullanılır.
+ * Sıra önemlidir: önce çok kelimeli ifadeler, sonra tek kelimeler.
+ */
+export const NOTAM_DICTIONARY = [
+  { abbr: 'FUEL NOT AVBL', en: 'fuel not available', tr: 'yakıt mevcut değil' },
+  { abbr: 'NOT AVBL', en: 'not available', tr: 'mevcut değil' },
+  { abbr: 'AD CLSD', en: 'aerodrome closed', tr: 'meydan kapalı' },
+  { abbr: 'ILS U/S', en: 'ILS unserviceable', tr: 'ILS hizmet dışı' },
+  { abbr: 'U/S', en: 'unserviceable', tr: 'hizmet dışı' },
+  { abbr: 'AVBL', en: 'available', tr: 'mevcut' },
+  { abbr: 'CLSD', en: 'closed', tr: 'kapalı' },
+  { abbr: 'CLOSED', en: 'closed', tr: 'kapalı' },
+  { abbr: 'BTN', en: 'between', tr: 'arasında' },
+  { abbr: 'WIP', en: 'work in progress', tr: 'çalışma devam ediyor' },
+  { abbr: 'CRANE', en: 'crane', tr: 'vinç' },
+  { abbr: 'OBST', en: 'obstacle', tr: 'engel' },
+  { abbr: 'LIGHTS', en: 'lights', tr: 'ışıklar' },
+  { abbr: 'RWY', en: 'runway', tr: 'pist' },
+  { abbr: 'TWY', en: 'taxiway', tr: 'taksiyolu' },
+  { abbr: 'APRON', en: 'apron', tr: 'apron' },
+  { abbr: 'ACFT', en: 'aircraft', tr: 'uçak' },
+  { abbr: 'DEP', en: 'departure', tr: 'kalkış' },
+  { abbr: 'ARR', en: 'arrival', tr: 'varış' },
+  { abbr: 'AD', en: 'aerodrome', tr: 'meydan' },
+  { abbr: 'ILS', en: 'ILS', tr: 'ILS' },
+  { abbr: 'OPS', en: 'operations', tr: 'operasyonlar' },
+  { abbr: 'DUE TO', en: 'due to', tr: 'nedeniyle' },
+  { abbr: 'DUE', en: 'due to', tr: 'nedeniyle' },
+  { abbr: 'SNOW', en: 'snow', tr: 'kar' },
+  { abbr: 'ICE', en: 'ice', tr: 'buz' },
+  { abbr: 'WX', en: 'weather', tr: 'hava şartları' },
+  { abbr: 'VC', en: 'in vicinity of', tr: 'yakınında' },
+  { abbr: 'AGL', en: 'above ground level', tr: 'yer seviyesi üstünde' },
+  { abbr: 'FT', en: 'feet', tr: 'feet' },
+];

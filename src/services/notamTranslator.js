@@ -1,0 +1,197 @@
+import { NOTAM_DICTIONARY } from '../constants/dictionary';
+import {
+  SEVERITY,
+  HIGH_KEYWORDS,
+  MEDIUM_KEYWORDS,
+} from '../constants/severity';
+
+/**
+ * NOTAM metnini Plain English / Türkçe çeviriye dönüştüren mock AI servisi.
+ *
+ * Strateji:
+ *   1. Önce sık görülen NOTAM kalıpları (RWY CLSD, AD CLSD, ILS U/S, vs.)
+ *      doğal cümlelerle eşleştirilir.
+ *   2. Kalan tokenlar sözlükten kelime kelime çevrilir (fallback).
+ *
+ * Gerçek bir LLM / AI servisi (OpenAI, Anthropic, vb.) bağlamak için
+ * sadece `translateNotam` fonksiyonunun gövdesi değiştirilmelidir.
+ * Public API (input -> Promise<TranslationResult>) korunmalıdır.
+ *
+ * @typedef {Object} TranslationResult
+ * @property {string} plainEnglish
+ * @property {string} turkish
+ * @property {'LOW'|'MEDIUM'|'HIGH'} severity
+ * @property {string} pilotSummary
+ */
+
+const TIME_RANGE_REGEX = /\b(\d{2})(\d{2})-(\d{2})(\d{2})Z\b/;
+const RWY_DESIGNATOR = '\\d{2}[LRC]?(?:\\/\\d{2}[LRC]?)?';
+
+const PHRASE_PATTERNS = [
+  {
+    re: new RegExp(
+      `\\bRWY\\s+(${RWY_DESIGNATOR})\\s+(?:CLSD|CLOSED)\\s+BTN\\s+(\\d{2})(\\d{2})-(\\d{2})(\\d{2})Z\\b`,
+      'gi'
+    ),
+    en: (_, rwy, h1, m1, h2, m2) =>
+      `Runway ${rwy} is closed between ${h1}:${m1} and ${h2}:${m2} UTC`,
+    tr: (_, rwy, h1, m1, h2, m2) =>
+      `${rwy} pisti ${h1}:${m1}-${h2}:${m2} UTC arasında kapalıdır`,
+  },
+  {
+    re: new RegExp(
+      `\\bRWY\\s+(${RWY_DESIGNATOR})\\s+(?:CLSD|CLOSED)\\b`,
+      'gi'
+    ),
+    en: (_, rwy) => `Runway ${rwy} is closed`,
+    tr: (_, rwy) => `${rwy} pisti kapalıdır`,
+  },
+  {
+    re: /\bTWY\s+([A-Z0-9]+)\s+(?:CLSD|CLOSED)\b/gi,
+    en: (_, twy) => `Taxiway ${twy} is closed`,
+    tr: (_, twy) => `${twy} taksiyolu kapalıdır`,
+  },
+  {
+    re: /\bTWY\s+([A-Z0-9]+)\s+WIP\b/gi,
+    en: (_, twy) => `Taxiway ${twy} has work in progress`,
+    tr: (_, twy) => `${twy} taksiyolunda çalışma devam ediyor`,
+  },
+  {
+    re: /\bAD\s+(?:CLSD|CLOSED)\b/gi,
+    en: () => 'Aerodrome is closed',
+    tr: () => 'meydan kapalıdır',
+  },
+  {
+    re: new RegExp(`\\bILS\\s+RWY\\s+(${RWY_DESIGNATOR})\\s+U\\/S\\b`, 'gi'),
+    en: (_, rwy) => `ILS for runway ${rwy} is unserviceable`,
+    tr: (_, rwy) => `${rwy} pisti için ILS hizmet dışı`,
+  },
+  {
+    re: /\bILS\s+U\/S\b/gi,
+    en: () => 'ILS is unserviceable',
+    tr: () => 'ILS hizmet dışı',
+  },
+  {
+    re: /\bFUEL\s+NOT\s+AVBL\b/gi,
+    en: () => 'fuel is not available',
+    tr: () => 'yakıt mevcut değil',
+  },
+  {
+    re: /\b(?:BTN\s+)?(\d{2})(\d{2})-(\d{2})(\d{2})Z\b/g,
+    en: (_, h1, m1, h2, m2) => `between ${h1}:${m1} and ${h2}:${m2} UTC`,
+    tr: (_, h1, m1, h2, m2) => `${h1}:${m1}-${h2}:${m2} UTC arasında`,
+  },
+];
+
+function replaceAbbreviations(text, lang) {
+  let output = text;
+  for (const entry of NOTAM_DICTIONARY) {
+    const pattern = new RegExp(
+      `\\b${entry.abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+      'g'
+    );
+    output = output.replace(pattern, lang === 'en' ? entry.en : entry.tr);
+  }
+  return output;
+}
+
+function finalize(text) {
+  let out = text.replace(/\s+/g, ' ').trim();
+  out = out.replace(/\s+([.,;:!?])/g, '$1');
+  if (out.length === 0) return out;
+  if (!/[.!?]$/.test(out)) out += '.';
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+
+function translateTo(notam, lang) {
+  let text = notam.trim();
+  for (const pat of PHRASE_PATTERNS) {
+    text = text.replace(pat.re, pat[lang]);
+  }
+  text = replaceAbbreviations(text, lang);
+  return finalize(text);
+}
+
+function detectSeverity(notam) {
+  const upper = notam.toUpperCase();
+  if (HIGH_KEYWORDS.some((kw) => upper.includes(kw))) return SEVERITY.HIGH;
+  if (MEDIUM_KEYWORDS.some((kw) => upper.includes(kw))) return SEVERITY.MEDIUM;
+  return SEVERITY.LOW;
+}
+
+function buildPilotSummary(notam, severity) {
+  const upper = notam.toUpperCase();
+
+  if (upper.includes('AD CLSD')) {
+    return 'Meydan kapalı. Alternatif meydan ve yakıt planlaması zorunludur.';
+  }
+  if (upper.includes('FUEL NOT AVBL')) {
+    return 'Bu meydanda yakıt mevcut değil. Yakıt planlaması ve alternatif meydan kontrol edilmelidir.';
+  }
+  if (upper.includes('ILS U/S') || /ILS.*U\/S/.test(upper)) {
+    return 'ILS hizmet dışı. Yaklaşma briefing tekrar gözden geçirilmeli, alternatif yaklaşma prosedürü hazırlanmalıdır.';
+  }
+  if (
+    upper.includes('RWY') &&
+    (upper.includes('CLSD') || upper.includes('CLOSED'))
+  ) {
+    const rwyMatch = upper.match(/RWY\s*([0-9]{2}[LRC]?(\/[0-9]{2}[LRC]?)?)/);
+    const rwy = rwyMatch ? rwyMatch[1] : 'ilgili pist';
+    const timeMatch = notam.match(TIME_RANGE_REGEX);
+    if (timeMatch) {
+      const [, h1, m1, h2, m2] = timeMatch;
+      return `${h1}:${m1}-${h2}:${m2} UTC saatleri arasında ${rwy} pisti kullanılamaz. Alternatif pist veya meydan operasyonu kontrol edilmelidir.`;
+    }
+    return `${rwy} pisti kullanılamaz. Alternatif pist veya meydan operasyonu kontrol edilmelidir.`;
+  }
+  if (
+    upper.includes('TWY') &&
+    (upper.includes('CLSD') || upper.includes('CLOSED'))
+  ) {
+    return 'İlgili taksiyolu kapalı. Yer rotası ATC ile teyit edilmelidir.';
+  }
+  if (
+    upper.includes('WIP') ||
+    upper.includes('CRANE') ||
+    upper.includes('OBST')
+  ) {
+    return 'Meydan civarında çalışma/engel mevcut. Yaklaşma ve kalkış sırasında dikkatli olunmalı, NOTAM koordinatları briefing’e dahil edilmelidir.';
+  }
+  if (upper.includes('LIGHTS')) {
+    return 'İlgili ışık sistemi etkilenmiştir. Gece operasyonu ve minimum görüş şartları yeniden değerlendirilmelidir.';
+  }
+
+  if (severity === SEVERITY.HIGH) {
+    return 'Yüksek öncelikli NOTAM. Operasyonel planlama gözden geçirilmelidir.';
+  }
+  if (severity === SEVERITY.MEDIUM) {
+    return 'Planlamayı etkileyebilecek bilgi. Briefing sırasında dikkate alınmalıdır.';
+  }
+  return 'Bilgilendirme amaçlı NOTAM. Doğrudan aksiyon gerektirmez.';
+}
+
+/**
+ * Verilen NOTAM metnini analiz eder ve çeviri sonucu döner.
+ *
+ * Şu an mock olarak çalışıyor (~400ms gecikme ile).
+ * Gerçek AI API entegrasyonu için bu fonksiyonun içeriği değiştirilebilir;
+ * dönen şekil (TranslationResult) korunmalıdır.
+ *
+ * @param {string} notam
+ * @returns {Promise<TranslationResult>}
+ */
+export async function translateNotam(notam) {
+  await new Promise((resolve) => setTimeout(resolve, 400));
+
+  const plainEnglish = translateTo(notam, 'en');
+  const turkish = translateTo(notam, 'tr');
+  const severity = detectSeverity(notam);
+  const pilotSummary = buildPilotSummary(notam, severity);
+
+  return {
+    plainEnglish,
+    turkish,
+    severity,
+    pilotSummary,
+  };
+}
