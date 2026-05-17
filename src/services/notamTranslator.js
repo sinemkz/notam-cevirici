@@ -1,4 +1,5 @@
 import { NOTAM_DICTIONARY } from '../constants/dictionary';
+import { ENGLISH_TO_TURKISH_PHRASES } from '../constants/englishToTurkish';
 import {
   SEVERITY,
   HIGH_KEYWORDS,
@@ -11,7 +12,12 @@ import {
  * Strateji:
  *   1. Önce sık görülen NOTAM kalıpları (RWY CLSD, AD CLSD, ILS U/S, vs.)
  *      doğal cümlelerle eşleştirilir.
- *   2. Kalan tokenlar sözlükten kelime kelime çevrilir (fallback).
+ *   2. Kalan tokenlar kısaltma sözlüğünden kelime kelime çevrilir.
+ *   3. Türkçe çıktı için ek olarak yaygın İngilizce NOTAM cümleleri
+ *      (inşaat, kenar ışıkları, takip aracı vb.) ayrı bir katmanda çevrilir.
+ *
+ * Tam cümle çevirisi için gerçek bir çeviri motoru / LLM API gerekir;
+ * mock modda İngilizce paragraflar sözlükteki kalıplarla yaklaşık Türkçeleştirilir.
  *
  * Gerçek bir LLM / AI servisi (OpenAI, Anthropic, vb.) bağlamak için
  * sadece `translateNotam` fonksiyonunun gövdesi değiştirilmelidir.
@@ -113,6 +119,31 @@ const PHRASE_PATTERNS = [
   },
 ];
 
+/** Uzun İngilizce kalıplar önce işlensin */
+const SORTED_EN_TR = [...ENGLISH_TO_TURKISH_PHRASES].sort(
+  (a, b) => b.en.length - a.en.length
+);
+
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Serbest metindeki yaygın İngilizce NOTAM ifadelerini Türkçeye çevirir.
+ * Tek kelimelerde yanlış eşleşmeyi azaltmak için kelime sınırı kullanılır.
+ */
+function replaceEnglishProseToTurkish(text) {
+  let out = text;
+  for (const { en, tr } of SORTED_EN_TR) {
+    const esc = escapeRegExp(en);
+    const re = /\s/.test(en)
+      ? new RegExp(esc, 'gi')
+      : new RegExp(`\\b${esc}\\b`, 'gi');
+    out = out.replace(re, tr);
+  }
+  return out;
+}
+
 function replaceAbbreviations(text, lang) {
   let output = text;
   for (const entry of NOTAM_DICTIONARY) {
@@ -139,6 +170,9 @@ function translateTo(notam, lang) {
     text = text.replace(pat.re, pat[lang]);
   }
   text = replaceAbbreviations(text, lang);
+  if (lang === 'tr') {
+    text = replaceEnglishProseToTurkish(text);
+  }
   return finalize(text);
 }
 
