@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   },
   body: {},
   text: {
-    color: '#0F172A',
+    color: '#3D3528',
     fontSize: 15,
     lineHeight: 22,
   },

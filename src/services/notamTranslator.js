@@ -28,6 +28,28 @@ const TIME_RANGE_REGEX = /\b(\d{2})(\d{2})-(\d{2})(\d{2})Z\b/;
 const RWY_DESIGNATOR = '\\d{2}[LRC]?(?:\\/\\d{2}[LRC]?)?';
 
 const PHRASE_PATTERNS = [
+  // TRIGGER NOTAM-PERM AIRAC AIP AMDT XX/YY WEF DD MMM YYYY CHANGES OF
+  {
+    re: /\bTRIGGER\s+NOTAM[-\s]+PERM\s+AIRAC\s+AIP\s+AMDT\s+(\d{2}\/\d{2})\s+WEF\s+(\d{1,2})\s+([A-Z]{3})\s+(\d{4})\s+CHANGES\s+OF\s+([A-Z]{4})\b/gi,
+    en: (_, amdt, d, m, y, icao) =>
+      `Trigger NOTAM (permanent) for AIRAC AIP amendment ${amdt}, effective ${d} ${m} ${y}, regarding changes at ${icao}`,
+    tr: (_, amdt, d, m, y, icao) =>
+      `${amdt} numaralı AIRAC AIP değişikliği için tetikleyici NOTAM (kalıcı), ${d} ${m} ${y} tarihinden itibaren geçerli, ${icao} meydanındaki değişikliklerle ilgili`,
+  },
+  // AIRAC AIP AMDT XX/YY WEF DD MMM YYYY
+  {
+    re: /\bAIRAC\s+AIP\s+AMDT\s+(\d{2}\/\d{2})\s+WEF\s+(\d{1,2})\s+([A-Z]{3})\s+(\d{4})\b/gi,
+    en: (_, amdt, d, m, y) =>
+      `AIRAC AIP amendment ${amdt}, effective ${d} ${m} ${y}`,
+    tr: (_, amdt, d, m, y) =>
+      `${amdt} numaralı AIRAC AIP değişikliği, ${d} ${m} ${y} tarihinden itibaren geçerli`,
+  },
+  // WEF DD MMM YYYY (standalone)
+  {
+    re: /\bWEF\s+(\d{1,2})\s+([A-Z]{3})\s+(\d{4})\b/gi,
+    en: (_, d, m, y) => `effective ${d} ${m} ${y}`,
+    tr: (_, d, m, y) => `${d} ${m} ${y} tarihinden itibaren geçerli`,
+  },
   {
     re: new RegExp(
       `\\bRWY\\s+(${RWY_DESIGNATOR})\\s+(?:CLSD|CLOSED)\\s+BTN\\s+(\\d{2})(\\d{2})-(\\d{2})(\\d{2})Z\\b`,
@@ -45,6 +67,14 @@ const PHRASE_PATTERNS = [
     ),
     en: (_, rwy) => `Runway ${rwy} is closed`,
     tr: (_, rwy) => `${rwy} pisti kapalıdır`,
+  },
+  // TWY L BTN TWY A AND TWY B CLSD
+  {
+    re: /\bTWY\s+([A-Z0-9]+)\s+BTN\s+TWY\s+([A-Z0-9]+)\s+AND\s+TWY\s+([A-Z0-9]+)\s+(?:CLSD|CLOSED)\b/gi,
+    en: (_, t1, t2, t3) =>
+      `Taxiway ${t1} between taxiway ${t2} and taxiway ${t3} is closed`,
+    tr: (_, t1, t2, t3) =>
+      `${t1} taksiyolunun ${t2} ve ${t3} taksiyolları arasındaki kısmı kapalıdır`,
   },
   {
     re: /\bTWY\s+([A-Z0-9]+)\s+(?:CLSD|CLOSED)\b/gi,

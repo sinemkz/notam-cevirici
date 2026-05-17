@@ -32,24 +32,24 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#3D3528',
     alignItems: 'center',
     justifyContent: 'center',
   },
   logoText: {
-    color: '#fff',
+    color: '#F5F1E8',
     fontSize: 22,
     fontWeight: '800',
   },
   title: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#0F172A',
+    color: '#3D3528',
     letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 13,
-    color: '#64748B',
+    color: '#8A7E68',
     marginTop: 2,
   },
 });
