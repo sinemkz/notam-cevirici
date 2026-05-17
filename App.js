@@ -15,6 +15,7 @@ import NotamInput from './src/components/NotamInput';
 import ResultSection from './src/components/ResultSection';
 import Disclaimer from './src/components/Disclaimer';
 import { translateNotam } from './src/services/notamTranslator';
+import { theme } from './src/constants/theme';
 
 export default function App() {
   const [notam, setNotam] = useState('');
@@ -44,9 +45,17 @@ export default function App() {
     setResult(null);
   };
 
+  const handleRefresh = () => {
+    if (notam.trim().length === 0) {
+      Alert.alert('Uyarı', 'Önce NOTAM metni girin.');
+      return;
+    }
+    handleTranslate();
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F1E8" />
+      <StatusBar barStyle="dark-content" backgroundColor={theme.screenBg} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
@@ -56,23 +65,30 @@ export default function App() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Header />
+          <View
+            style={[
+              styles.contentShell,
+              theme.fontFamily ? { fontFamily: theme.fontFamily } : null,
+            ]}
+          >
+            <Header onRefresh={handleRefresh} loading={loading} />
 
-          <NotamInput
-            value={notam}
-            onChangeText={setNotam}
-            onSubmit={handleTranslate}
-            onClear={handleClear}
-            loading={loading}
-          />
+            <NotamInput
+              value={notam}
+              onChangeText={setNotam}
+              onSubmit={handleTranslate}
+              onClear={handleClear}
+              loading={loading}
+            />
 
-          <ResultSection result={result} />
+            <ResultSection result={result} />
 
-          {result && (
-            <View style={styles.disclaimerWrapper}>
-              <Disclaimer />
-            </View>
-          )}
+            {result && (
+              <View style={styles.disclaimerWrapper}>
+                <Disclaimer />
+              </View>
+            )}
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -82,16 +98,23 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F5F1E8',
+    backgroundColor: theme.screenBg,
   },
   flex: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingBottom: 48,
+  },
+  contentShell: {
+    width: '100%',
+    maxWidth: theme.contentMaxWidth,
+    paddingHorizontal: theme.pagePadding,
+    paddingTop: Platform.OS === 'web' ? 16 : 8,
   },
   disclaimerWrapper: {
-    paddingHorizontal: 20,
     marginTop: 4,
   },
 });

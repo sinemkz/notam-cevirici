@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import ResultCard from './ResultCard';
 import SeverityBadge from './SeverityBadge';
 import { SEVERITY_META } from '../constants/severity';
+import { theme } from '../constants/theme';
 
 export default function ResultSection({ result }) {
   if (!result) return null;
@@ -11,35 +12,38 @@ export default function ResultSection({ result }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Analiz Sonucu</Text>
+      <Text style={styles.sectionTitle}>ANALİZ SONUCU</Text>
 
       <ResultCard
         title="Plain English"
-        accentColor="#6B95B0"
-        backgroundColor="#E8F0F5"
-        borderColor="#CFDEE7"
+        titleIcon="☁️"
+        titleColor={theme.plainEnglish.title}
+        backgroundColor={theme.plainEnglish.bg}
+        borderColor={theme.plainEnglish.border}
       >
         {result.plainEnglish}
       </ResultCard>
 
       <ResultCard
         title="Türkçe Çeviri"
-        accentColor="#8A7AB8"
-        backgroundColor="#EDE7F4"
-        borderColor="#D8CCE8"
+        titleIcon="🇹🇷"
+        titleColor={theme.turkish.title}
+        backgroundColor={theme.turkish.bg}
+        borderColor={theme.turkish.border}
       >
         {result.turkish}
       </ResultCard>
 
       <ResultCard
         title="Önem Derecesi"
-        accentColor={severityMeta.color}
-        backgroundColor={severityMeta.bg}
-        borderColor={severityMeta.border}
+        titleIcon="🛡️"
+        titleColor={severityMeta.headerTitle}
+        backgroundColor={severityMeta.cardBg}
+        borderColor={severityMeta.cardBorder}
       >
-        <View style={{ gap: 8 }}>
+        <View style={styles.severityInner}>
           <SeverityBadge severity={result.severity} />
-          <Text style={[styles.severityDescription, { color: severityMeta.color }]}>
+          <Text style={[styles.severityDescription, { color: severityMeta.descColor }]}>
             {severityMeta.description}
           </Text>
         </View>
@@ -47,9 +51,10 @@ export default function ResultSection({ result }) {
 
       <ResultCard
         title="Pilot İçin Özet"
-        accentColor="#8A6E3A"
-        backgroundColor="#F5EBD7"
-        borderColor="#E5D5B0"
+        titleIcon="🧑‍✈️"
+        titleColor={theme.pilot.title}
+        backgroundColor={theme.pilot.bg}
+        borderColor={theme.pilot.border}
       >
         {result.pilotSummary}
       </ResultCard>
@@ -59,20 +64,23 @@ export default function ResultSection({ result }) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
-    marginTop: 8,
+    marginTop: 4,
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#6B5E47',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    marginBottom: 10,
+    color: '#111827',
+    letterSpacing: 1,
+    marginBottom: theme.sectionTitleGap,
+    fontFamily: theme.fontFamily,
+  },
+  severityInner: {
+    gap: 12,
   },
   severityDescription: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '500',
-    lineHeight: 19,
+    lineHeight: 21,
+    fontFamily: theme.fontFamily,
   },
 });

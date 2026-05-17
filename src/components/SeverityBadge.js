@@ -1,33 +1,25 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SEVERITY_META } from '../constants/severity';
+import { theme } from '../constants/theme';
 
-export default function SeverityBadge({ severity, size = 'md' }) {
+export default function SeverityBadge({ severity }) {
   const meta = SEVERITY_META[severity];
   if (!meta) return null;
-
-  const isSm = size === 'sm';
 
   return (
     <View
       style={[
         styles.badge,
         {
-          backgroundColor: meta.bg,
-          borderColor: meta.border,
-          paddingVertical: isSm ? 4 : 6,
-          paddingHorizontal: isSm ? 10 : 12,
+          backgroundColor: meta.pillBg,
+          borderColor: meta.pillBorder,
         },
       ]}
     >
       <View style={[styles.dot, { backgroundColor: meta.color }]} />
-      <Text
-        style={[
-          styles.text,
-          { color: meta.color, fontSize: isSm ? 12 : 13 },
-        ]}
-      >
-        {meta.label}
+      <Text style={[styles.text, { color: meta.pillText }]}>
+        {meta.badgeLabel}
       </Text>
     </View>
   );
@@ -40,7 +32,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     borderRadius: 999,
     borderWidth: 1,
-    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    gap: 8,
   },
   dot: {
     width: 8,
@@ -49,6 +43,8 @@ const styles = StyleSheet.create({
   },
   text: {
     fontWeight: '700',
-    letterSpacing: 0.3,
+    fontSize: 13,
+    letterSpacing: 0.6,
+    fontFamily: theme.fontFamily,
   },
 });

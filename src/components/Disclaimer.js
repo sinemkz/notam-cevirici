@@ -1,10 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { theme } from '../constants/theme';
 
 export default function Disclaimer() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.icon}>!</Text>
+    <View style={[styles.container, theme.shadowCard]}>
+      <View style={styles.iconCircle}>
+        <Text style={styles.iconMark}>!</Text>
+      </View>
       <Text style={styles.text}>
         Bu çeviri yardımcı amaçlıdır. Operasyonel kararlar için daima resmi
         NOTAM kaynağı ve şirket prosedürleri esas alınmalıdır.
@@ -17,30 +20,38 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
-    backgroundColor: '#FBF1C7',
-    borderColor: '#EFD89A',
+    gap: 14,
+    backgroundColor: theme.disclaimer.bg,
+    borderColor: theme.disclaimer.border,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    borderRadius: theme.cardRadius,
+    paddingVertical: theme.cardPadding,
+    paddingHorizontal: theme.cardPadding,
     marginTop: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    elevation: 2,
   },
-  icon: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#B0823A',
-    color: '#FBF7EE',
-    textAlign: 'center',
-    lineHeight: 22,
+  iconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: theme.disclaimer.iconBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconMark: {
+    color: '#A16D15',
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: 16,
+    marginTop: -1,
+    fontFamily: theme.fontFamily,
   },
   text: {
     flex: 1,
-    color: '#8A6E3A',
-    fontSize: 12.5,
-    lineHeight: 18,
+    color: theme.disclaimer.text,
+    fontSize: 13,
+    lineHeight: 20,
+    fontFamily: theme.fontFamily,
   },
 });

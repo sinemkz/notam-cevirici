@@ -1,23 +1,30 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { theme } from '../constants/theme';
 
 export default function ResultCard({
   title,
+  titleIcon,
+  titleColor,
   children,
-  accentColor = '#0F172A',
   backgroundColor = '#FFFFFF',
-  borderColor = '#E2E8F0',
+  borderColor = theme.border,
 }) {
   return (
     <View
       style={[
         styles.card,
         { backgroundColor, borderColor },
+        theme.shadowCard,
       ]}
     >
       <View style={styles.header}>
-        <View style={[styles.accent, { backgroundColor: accentColor }]} />
-        <Text style={[styles.title, { color: accentColor }]}>{title}</Text>
+        {titleIcon ? (
+          <Text style={styles.headerIcon}>{titleIcon}</Text>
+        ) : null}
+        <Text style={[styles.title, titleColor && { color: titleColor }]}>
+          {title}
+        </Text>
       </View>
       <View style={styles.body}>
         {typeof children === 'string' ? (
@@ -32,38 +39,32 @@ export default function ResultCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: theme.cardRadius,
     borderWidth: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.04,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 1,
+    padding: theme.cardPadding,
+    marginBottom: theme.cardGap,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
+    gap: 10,
+    marginBottom: 12,
   },
-  accent: {
-    width: 4,
-    height: 16,
-    borderRadius: 2,
+  headerIcon: {
+    fontSize: 18,
   },
   title: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '700',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
+    letterSpacing: 0.2,
+    color: '#1a1a1a',
+    fontFamily: theme.fontFamily,
   },
   body: {},
   text: {
-    color: '#3D3528',
+    color: '#292524',
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 23,
+    fontFamily: theme.fontFamily,
   },
 });
