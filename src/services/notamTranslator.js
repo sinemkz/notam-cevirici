@@ -149,11 +149,21 @@ function replaceAbbreviations(text, lang) {
   for (const entry of NOTAM_DICTIONARY) {
     const pattern = new RegExp(
       `\\b${entry.abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
-      'g'
+      'gi'
     );
     output = output.replace(pattern, lang === 'en' ? entry.en : entry.tr);
   }
   return output;
+}
+
+/**
+ * NOTAM'larda sık görülür: rakam ile birimin bitişik yazılması (1NM, 500FT).
+ * \b kelime sınırı N ile M arasında oluşmadığı için NM/FT hiç eşleşmezdi.
+ */
+function preprocessAttachedUnits(text) {
+  return text
+    .replace(/(\d)(NM)\b/gi, '$1 $2')
+    .replace(/(\d)(FT)\b/gi, '$1 $2');
 }
 
 function finalize(text) {
@@ -165,7 +175,7 @@ function finalize(text) {
 }
 
 function translateTo(notam, lang) {
-  let text = notam.trim();
+  let text = preprocessAttachedUnits(notam.trim());
   for (const pat of PHRASE_PATTERNS) {
     text = text.replace(pat.re, pat[lang]);
   }
@@ -223,6 +233,9 @@ function buildPilotSummary(notam, severity) {
   }
   if (upper.includes('LIGHTS')) {
     return 'İlgili ışık sistemi etkilenmiştir. Gece operasyonu ve minimum görüş şartları yeniden değerlendirilmelidir.';
+  }
+  if (upper.includes('KITE')) {
+    return 'Bölgede uçurtma faaliyeti bildirilmiştir. Alçak irtifada ek çarpışma riski olabilir; görsel tarama ve ATC bilgilendirmesi dikkate alınmalıdır.';
   }
 
   if (severity === SEVERITY.HIGH) {

@@ -11,6 +11,9 @@
 export const NOTAM_DICTIONARY = [
   // === Çok kelimeli ifadeler (önce eşleşmeli) ===
   { abbr: 'FUEL NOT AVBL', en: 'fuel not available', tr: 'yakıt mevcut değil' },
+  { abbr: 'MAX HGT', en: 'maximum height', tr: 'en fazla yükseklik' },
+  { abbr: 'KITE FLYING', en: 'kite flying', tr: 'uçurtma uçurma' },
+  { abbr: 'NM RADIUS', en: 'nautical mile radius', tr: 'deniz mili yarıçapında' },
   { abbr: 'NOT AVBL', en: 'not available', tr: 'mevcut değil' },
   { abbr: 'AD CLSD', en: 'aerodrome closed', tr: 'meydan kapalı' },
   { abbr: 'ILS U/S', en: 'ILS unserviceable', tr: 'ILS hizmet dışı' },
@@ -155,6 +158,10 @@ export const NOTAM_DICTIONARY = [
   { abbr: 'CTAF', en: 'CTAF', tr: 'CTAF' },
   { abbr: 'FREQ', en: 'frequency', tr: 'frekans' },
   { abbr: 'COM', en: 'communication', tr: 'haberleşme' },
+  { abbr: 'CTC', en: 'contact', tr: 'irtibat' },
+  { abbr: 'NEAR', en: 'near', tr: 'yakınında' },
+  { abbr: 'MAX', en: 'maximum', tr: 'en fazla' },
+  { abbr: 'RADIUS', en: 'radius', tr: 'yarıçap' },
   { abbr: 'CH', en: 'channel', tr: 'kanal' },
 
   // === Hava sahası ===

@@ -45,4 +45,4 @@ export const HIGH_KEYWORDS = [
   'VASI',
 ];
 
-export const MEDIUM_KEYWORDS = ['WIP', 'CRANE', 'TWY', 'LIGHTS', 'OBST'];
+export const MEDIUM_KEYWORDS = ['WIP', 'CRANE', 'TWY', 'LIGHTS', 'OBST', 'KITE'];
