@@ -5,12 +5,8 @@
  */
 export const ENGLISH_TO_TURKISH_PHRASES = [
   {
-    en: 'CTC FOR FLYING TIMES',
-    tr: 'uçuş zamanları için irtibat',
-  },
-  {
-    en: 'FLYING TIMES',
-    tr: 'uçuş zamanları',
+    en: '(NEAR',
+    tr: '(yakınında',
   },
   {
     en: 'EDGE LIGHTS IN THE SERVICE AREA WILL BE SHIFTED AS WELL',

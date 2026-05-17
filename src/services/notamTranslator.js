@@ -136,23 +136,56 @@ function replaceEnglishProseToTurkish(text) {
   let out = text;
   for (const { en, tr } of SORTED_EN_TR) {
     const esc = escapeRegExp(en);
-    const re = /\s/.test(en)
-      ? new RegExp(esc, 'gi')
-      : new RegExp(`\\b${esc}\\b`, 'gi');
+    let re;
+    if (/\s/.test(en)) {
+      re = new RegExp(esc, 'gi');
+    } else if (en.startsWith('(') || en.startsWith('[')) {
+      re = new RegExp(esc, 'gi');
+    } else {
+      re = new RegExp(`\\b${esc}\\b`, 'gi');
+    }
     out = out.replace(re, tr);
   }
   return out;
 }
 
-function replaceAbbreviations(text, lang) {
-  let output = text;
-  for (const entry of NOTAM_DICTIONARY) {
-    const pattern = new RegExp(
-      `\\b${entry.abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
-      'gi'
-    );
-    output = output.replace(pattern, lang === 'en' ? entry.en : entry.tr);
+function buildAbbrRegex(abbr) {
+  if (abbr.endsWith(':')) {
+    const base = escapeRegExp(abbr.slice(0, -1));
+    return `\\b${base}\\s*:`;
   }
+  if (abbr.includes(' ')) {
+    const parts = abbr.trim().split(/\s+/).map(escapeRegExp);
+    return `\\b${parts.join('\\s+')}\\b`;
+  }
+  return `\\b${escapeRegExp(abbr)}\\b`;
+}
+
+function replaceAbbreviations(text, lang) {
+  const multiWord = NOTAM_DICTIONARY.filter(
+    (e) => e.abbr.includes(' ') && !e.abbr.endsWith(':')
+  );
+  const colonLabels = NOTAM_DICTIONARY.filter((e) => e.abbr.endsWith(':'));
+  const singleWord = NOTAM_DICTIONARY.filter(
+    (e) => !e.abbr.includes(' ') && !e.abbr.endsWith(':')
+  );
+
+  multiWord.sort((a, b) => b.abbr.length - a.abbr.length);
+
+  let output = text;
+  const run = (entries) => {
+    for (const entry of entries) {
+      const pattern = new RegExp(buildAbbrRegex(entry.abbr), 'gi');
+      output = output.replace(
+        pattern,
+        lang === 'en' ? entry.en : entry.tr
+      );
+    }
+  };
+
+  run(multiWord);
+  run(colonLabels);
+  run(singleWord);
   return output;
 }
 
@@ -166,6 +199,25 @@ function preprocessAttachedUnits(text) {
     .replace(/(\d)(FT)\b/gi, '$1 $2');
 }
 
+/** Bazı kaynaklarda saat ile C) bölümü bitişik yapışır: 04:40C) */
+function preprocessGluedSections(text) {
+  return text.replace(/(\d{2}:\d{2})C\s*\)/gi, '$1 C)');
+}
+
+/** Q/E satırlarına kısa Türkçe açıklama (kodlar aynı kalır). */
+function preprocessLineTags(text) {
+  return text
+    .replace(/\bQ\s*\)\s*/gi, 'Q (etki alanı / FIR-konu kodu): ')
+    .replace(/\bE\s*\)\s*/gi, 'E (açıklama metni): ');
+}
+
+function preprocessNotamText(text) {
+  let t = preprocessAttachedUnits(text);
+  t = preprocessGluedSections(t);
+  t = preprocessLineTags(t);
+  return t;
+}
+
 function finalize(text) {
   let out = text.replace(/\s+/g, ' ').trim();
   out = out.replace(/\s+([.,;:!?])/g, '$1');
@@ -175,7 +227,7 @@ function finalize(text) {
 }
 
 function translateTo(notam, lang) {
-  let text = preprocessAttachedUnits(notam.trim());
+  let text = preprocessNotamText(notam.trim());
   for (const pat of PHRASE_PATTERNS) {
     text = text.replace(pat.re, pat[lang]);
   }

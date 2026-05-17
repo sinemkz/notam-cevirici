@@ -1,9 +1,9 @@
 /**
  * Kapsamlı NOTAM / havacılık kısaltma sözlüğü.
  *
- * Mock çevirmen bu listeyi sırayla işler — bu yüzden ÇOK KELİMELİ
- * ifadeler en üstte, tek kelime / kısaltmalar aşağıda olmalı.
- * (Aksi halde "FUEL" tek başına eşleşip "FUEL NOT AVBL" hiç görünmez.)
+ * Mock çevirmen önce çok kelimeli kısaltmaları, sonra `FROM:` gibi etiketleri,
+ * en son tek kelimeleri işler — aksi halde `HGT`, `CTC` gibi kısa girdiler
+ * `MAX HGT` / `CTC FOR FLYING TIMES` ifadelerini bozar.
  *
  * ICAO Doc 8400 ("Procedures for Air Navigation Services — Abbreviations
  * and Codes") referans alınmıştır.
@@ -13,6 +13,7 @@ export const NOTAM_DICTIONARY = [
   { abbr: 'FUEL NOT AVBL', en: 'fuel not available', tr: 'yakıt mevcut değil' },
   { abbr: 'MAX HGT', en: 'maximum height', tr: 'en fazla yükseklik' },
   { abbr: 'KITE FLYING', en: 'kite flying', tr: 'uçurtma uçurma' },
+  { abbr: 'CTC FOR FLYING TIMES', en: 'contact for flying times', tr: 'uçuş zamanları için irtibat' },
   { abbr: 'NM RADIUS', en: 'nautical mile radius', tr: 'deniz mili yarıçapında' },
   { abbr: 'NOT AVBL', en: 'not available', tr: 'mevcut değil' },
   { abbr: 'AD CLSD', en: 'aerodrome closed', tr: 'meydan kapalı' },
@@ -25,6 +26,13 @@ export const NOTAM_DICTIONARY = [
   { abbr: 'WORK IN PROGRESS', en: 'work in progress', tr: 'çalışma devam ediyor' },
   { abbr: 'TRIGGER NOTAM', en: 'trigger NOTAM', tr: 'tetikleyici NOTAM' },
   { abbr: 'DUE TO', en: 'due to', tr: 'nedeniyle' },
+
+  // === NOTAM satır etiketleri (İngilizce şablonda sık görülür) ===
+  { abbr: 'FROM:', en: 'From:', tr: 'Başlangıç:' },
+  { abbr: 'TO:', en: 'To:', tr: 'Bitiş:' },
+  { abbr: 'LOWER:', en: 'Lower:', tr: 'Alt sınır:' },
+  { abbr: 'UPPER:', en: 'Upper:', tr: 'Üst sınır:' },
+  { abbr: 'SCHEDULE:', en: 'Schedule:', tr: 'Program:' },
 
   // === NOTAM tipi / yönetim ===
   { abbr: 'NOTAMN', en: 'new NOTAM', tr: 'yeni NOTAM' },
@@ -159,6 +167,7 @@ export const NOTAM_DICTIONARY = [
   { abbr: 'FREQ', en: 'frequency', tr: 'frekans' },
   { abbr: 'COM', en: 'communication', tr: 'haberleşme' },
   { abbr: 'CTC', en: 'contact', tr: 'irtibat' },
+  { abbr: 'TEL', en: 'telephone', tr: 'telefon' },
   { abbr: 'NEAR', en: 'near', tr: 'yakınında' },
   { abbr: 'MAX', en: 'maximum', tr: 'en fazla' },
   { abbr: 'RADIUS', en: 'radius', tr: 'yarıçap' },
@@ -216,6 +225,7 @@ export const NOTAM_DICTIONARY = [
   // === Birimler / yükseklik ===
   { abbr: 'AGL', en: 'above ground level', tr: 'yer seviyesi üstünde' },
   { abbr: 'AMSL', en: 'above mean sea level', tr: 'ortalama deniz seviyesi üstünde' },
+  { abbr: 'SFC', en: 'surface', tr: 'yüzey' },
   { abbr: 'MSL', en: 'mean sea level', tr: 'ortalama deniz seviyesi' },
   { abbr: 'ALT', en: 'altitude', tr: 'irtifa' },
   { abbr: 'FL', en: 'flight level', tr: 'uçuş seviyesi' },
